@@ -7,7 +7,7 @@ LABEL maintainer="bossa"
 
 # init
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --fix-missing \
     wget \
     zip \
     unzip \
