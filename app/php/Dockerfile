@@ -10,7 +10,7 @@ ENV GIT_SSL_NO_VERIFY true
 
 # init
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --fix-missing \
     curl \
     wget \
     zip \
@@ -18,6 +18,8 @@ RUN apt-get update -y && \
     vim \
     vim-common \
     git \
+    nodejs \
+    npm \
     locales \
     procps \
     openssl \
