@@ -1,21 +1,32 @@
-ARG PHP_VERSION
+ARG PHP_VERSION=8.4.4-fpm
 FROM php:${PHP_VERSION}
 
 LABEL maintainer="bossa"
 ENV GIT_SSL_NO_VERIFY=true \
     COMPOSER_ALLOW_SUPERUSER=1
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    curl wget zip unzip vim vim-common git nodejs npm locales \
-    procps openssl libz-dev libpq-dev libjpeg-dev libpng-dev \
-    libfreetype6-dev libssl-dev libmcrypt-dev libmemcached-dev \
-    libtool libicu-dev libxml2 libxml2-dev libgmp3-dev libevent-dev \
-    build-essential libzstd-dev autoconf libzip-dev zlib1g-dev \
-    libldap2-dev libbz2-dev libjpeg62-turbo-dev libtidy-dev \
-    libsqlite3-dev libsqlite3-0 tmux keychain net-tools python3 \
-    supervisor cron iputils-ping telnet \
-    && rm -rf /var/lib/apt/lists/*
+RUN printf '%s\n' \
+    'Acquire::Retries "5";' \
+    'Acquire::http::Timeout "60";' \
+    'Acquire::https::Timeout "60";' \
+    > /etc/apt/apt.conf.d/80-retries && \
+    apt-get update -y && \
+    for attempt in 1 2 3; do \
+        apt-get install -y --no-install-recommends --fix-missing \
+        curl wget zip unzip vim vim-common git nodejs npm locales \
+        procps openssl libz-dev libpq-dev libjpeg-dev libpng-dev \
+        libfreetype6-dev libssl-dev libmcrypt-dev libmemcached-dev \
+        libtool libicu-dev libxml2 libxml2-dev libgmp3-dev libevent-dev \
+        build-essential libzstd-dev autoconf libzip-dev zlib1g-dev \
+        libldap2-dev libbz2-dev libjpeg62-turbo-dev libtidy-dev \
+        libsqlite3-dev libsqlite3-0 tmux keychain net-tools python3 \
+        supervisor cron iputils-ping telnet && break; \
+        if [ "$attempt" = "3" ]; then exit 1; fi; \
+        apt-get update -y; \
+        apt-get install -f -y || true; \
+        sleep 5; \
+    done && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen && locale-gen
 

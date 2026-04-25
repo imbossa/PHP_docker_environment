@@ -1,3 +1,8 @@
 .idea
 .DS_Store
 .env
+# Secrets (do not commit real credentials)
+app/mysql/db/private_key.pem
+app/mysql/db/ca-key.pem
+app/backups/
+app/rabbitmq/data/rabbitmq-4/
