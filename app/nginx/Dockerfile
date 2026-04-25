@@ -1,4 +1,4 @@
-ARG NGINX_VERSION
+ARG NGINX_VERSION=1.27.4
 FROM nginx:${NGINX_VERSION}
 
 LABEL maintainer="bossa"
@@ -6,39 +6,50 @@ LABEL maintainer="bossa"
 # replace sources.list
 
 # init
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    wget \
-    zip \
-    unzip \
-    git-core \
-    openssl \
-    gcc \
-    zlib1g-dev \
-    libssl-dev \
-    libpcre3 \
-    libpcre3-dev \
-    libc-dev \
-    libxslt-dev \
-    libxslt1-dev \
-    libgd-dev \
-    libgeoip-dev \
-    libssl-dev \
-    libperl-dev \
-    perl \
-    build-essential \
-    ca-certificates \
-    procps \
-    tmux \
-    keychain \
-    net-tools \
-    curl \
-    make \
-    vim \
-    locales \
-    expect \
-    cron \
-    && rm -rf /var/lib/apt/lists/* \
+RUN printf '%s\n' \
+    'Acquire::Retries "5";' \
+    'Acquire::http::Timeout "60";' \
+    'Acquire::https::Timeout "60";' \
+    > /etc/apt/apt.conf.d/80-retries && \
+    apt-get update && \
+    for attempt in 1 2 3; do \
+        apt-get install -y --no-install-recommends --fix-missing \
+        wget \
+        zip \
+        unzip \
+        git-core \
+        openssl \
+        gcc \
+        zlib1g-dev \
+        libssl-dev \
+        libpcre3 \
+        libpcre3-dev \
+        libc-dev \
+        libxslt-dev \
+        libxslt1-dev \
+        libgd-dev \
+        libgeoip-dev \
+        libssl-dev \
+        libperl-dev \
+        perl \
+        build-essential \
+        ca-certificates \
+        procps \
+        tmux \
+        keychain \
+        net-tools \
+        curl \
+        make \
+        vim \
+        locales \
+        expect \
+        cron && break; \
+        if [ "$attempt" = "3" ]; then exit 1; fi; \
+        apt-get update; \
+        apt-get install -f -y || true; \
+        sleep 5; \
+    done && \
+    rm -rf /var/lib/apt/lists/* \
     && mkdir -p /home/downloads/
 
 # nginx-release
